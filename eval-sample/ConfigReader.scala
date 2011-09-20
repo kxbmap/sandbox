@@ -8,6 +8,11 @@ trait ConfigReader {
       case (m, p) => m ++ ev[Map[A, B]](p.toFile.inputStream())
     }
   }
+
+  def localize[A, B](base: Map[A, B], path: Path): Map[A, B] = {
+    val loc = read[A, B => B](path)
+    for ((i, b) <- base) yield i -> (loc.get(i).map(_(b)) getOrElse b)
+  }
 }
 
 object Main extends ConfigReader {
@@ -15,8 +20,7 @@ object Main extends ConfigReader {
     val ws = read[Int, Weapon](Path("config") / "weapons")
     println(ws)
 
-    val loc = read[Int, Weapon => Weapon](Path("localize") / "weapons.scala")
-    val lws = for ((i, w) <- ws) yield i -> (loc.get(i).map(_(w)) getOrElse w)
+    val lws = localize(ws, Path("localize") / "weapons.scala")
     println(lws)
   }
 }
