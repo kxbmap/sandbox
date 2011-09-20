@@ -4,8 +4,8 @@ import scala.tools.nsc.io.Path
 trait ConfigReader {
   def read[A, B](path: Path): Map[A, B] = {
     val ev = new Eval()
-    (Map.empty[A, B] /: path.walk) { case (m, p) =>
-      p.ifFile(f => ev[Map[A, B]](f.inputStream())).map(m ++) getOrElse m
+    (Map.empty[A, B] /: path.walkFilter(_.isFile)) {
+      case (m, p) => m ++ ev[Map[A, B]](p.toFile.inputStream())
     }
   }
 }
